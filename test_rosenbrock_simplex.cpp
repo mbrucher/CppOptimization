@@ -10,7 +10,7 @@
 
 typedef Eigen::Vector2f ContainerRosenbrock;
 
-// Fonction de coût classique
+// Rosenbrock cost function
 struct Rosenbrock
 {
   float operator()(const ContainerRosenbrock& parameters) const
@@ -30,20 +30,20 @@ int main(int argc, char** argv)
   long max_iterations = 1000;
   float ftol = 0.00001;
 
-  auto optimizer = Optimization::Local::build_simplex( // Builder pour générer automatiquement le bon type d'optimiseur
-      fun(start_point),                                // indication du type de valeur de retour de la fonction
-      start_point,                                     // indication du type des paramètres qui seront utilisés
-      fun,                                             // indication du type de fonction qui sera passée en paramètre
+  auto optimizer = Optimization::Local::build_simplex( // Builder to generate the correct optimizer
+      fun(start_point),                                // Used to infer the function return type
+      start_point,                                     // Used to infer parameter type
+      fun,                                             // Used to infer function type
       Optimization::Local::make_and_criteria(Optimization::Local::IterationCriterion(max_iterations),
-          Optimization::Local::RelativeValueCriterion<float>(ftol))); // Critère d'arrêt composite
+          Optimization::Local::RelativeValueCriterion<float>(ftol))); // Compoiste stoping criterion
 
-  optimizer.set_start_point(start_point);  // Valeur de départ
-  optimizer.set_delta(1);                  // Taille du polytope
-  optimizer.optimize(fun);                 // Optimisation de la fonction
+  optimizer.set_start_point(start_point);  // Starting parameters
+  optimizer.set_delta(1);                  // Simplex size
+  optimizer.optimize(fun);                 // Optimization start
 
   std::cout << "Starting point: " << start_point << std::endl;
   std::cout << "Starting value: " << fun(start_point) << std::endl;
-  std::cout << "Best point: " << optimizer.get_best_parameters() << std::endl; // Récupération des meilleurs paramètres
-  std::cout << "Best value: " << optimizer.get_best_value() << std::endl;      // Récupération de la meilleure valeur
+  std::cout << "Best point: " << optimizer.get_best_parameters() << std::endl; // Retrieve the best parameters
+  std::cout << "Best value: " << optimizer.get_best_value() << std::endl;      // Retrieve the best value
 }
 
