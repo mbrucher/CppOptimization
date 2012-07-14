@@ -8,12 +8,14 @@
 #include "simplex.h"
 #include "criteria.h"
 
-typedef Eigen::Vector2f ContainerRosenbrock;
+typedef Eigen::Vector2f ParameterTypeRosenbrock;
 
 // Rosenbrock cost function
 struct Rosenbrock
 {
-  float operator()(const ContainerRosenbrock& parameters) const
+  typedef float DataType;
+  typedef ParameterTypeRosenbrock ParameterType;
+  float operator()(const ParameterTypeRosenbrock& parameters) const
   {
     return (parameters(1, 0) - parameters(0, 0) * parameters(0, 0)) * (parameters(1, 0) - parameters(0, 0) * parameters(0, 0))
         + (1 - parameters(0, 0)) * (1 - parameters(0, 0));
@@ -22,7 +24,7 @@ struct Rosenbrock
 
 int main(int argc, char** argv)
 {
-  ContainerRosenbrock start_point;
+  ParameterTypeRosenbrock start_point;
   start_point << 10, 10;
 
   Rosenbrock fun;
@@ -31,8 +33,6 @@ int main(int argc, char** argv)
   float ftol = 0.00001;
 
   auto optimizer = Optimization::Local::build_simplex( // Builder to generate the correct optimizer
-      fun(start_point),                                // Used to infer the function return type
-      start_point,                                     // Used to infer parameter type
       fun,                                             // Used to infer function type
       Optimization::Local::make_and_criteria(Optimization::Local::IterationCriterion(max_iterations),
           Optimization::Local::RelativeValueCriterion<float>(ftol))); // Compoiste stoping criterion

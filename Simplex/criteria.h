@@ -51,7 +51,7 @@ namespace Optimization
 #if VERBOSE > 5
         std::cout << "RelativeValueCriterion: " << result << std::endl;
 #endif
-        return result > ftol;
+        return result;
       }
     };
 

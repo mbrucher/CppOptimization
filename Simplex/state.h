@@ -13,19 +13,19 @@ namespace Optimization
     /**
      * Optimization state for an optimizer
      */
-    template<class DataType_, class Container_>
+    template<class DataType_, class ParameterType_>
     struct State
     {
       typedef DataType_ DataType;
-      typedef Container_ Container;
+      typedef ParameterType_ ParameterType;
 
-      Container best_parameters;
+      ParameterType best_parameters;
       DataType best_value;
 
-      Container current_parameters;
+      ParameterType current_parameters;
       DataType current_value;
 
-      Container former_parameters;
+      ParameterType former_parameters;
       DataType former_value;
 
       long iteration;

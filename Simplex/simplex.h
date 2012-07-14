@@ -16,20 +16,20 @@ namespace Optimization
      * Complies to a simple and standard interface
      *
      * @param DataType is the type of inner values to consider
-     * @param Container is the type of container (Eigen if possible)
+     * @param ParameterType is the type of ParameterType (Eigen if possible)
      * @param Function is the type of Function to optimize
      */
-    template<class DataType, class Container, class Function, class Criterion>
+    template<class DataType, class ParameterType, class Function, class Criterion>
     class Simplex
     {
-      State<DataType, Container> state;
+      State<DataType, ParameterType> state;
       DataType delta;
       Eigen::Array<DataType, Eigen::Dynamic, Eigen::Dynamic> polytope_points;
       Eigen::Array<DataType, Eigen::Dynamic, Eigen::Dynamic> polytope_values;
 
       Criterion criterion;
 
-      void initialize_polytope(const Container& start_point, DataType delta, const Function& fun)
+      void initialize_polytope(const ParameterType& start_point, DataType delta, const Function& fun)
       {
         polytope_points.resize(start_point.size(), start_point.size() + 1);
         polytope_values.resize(1, start_point.size() + 1);
@@ -45,7 +45,7 @@ namespace Optimization
         }
       }
 
-      void display(const Function& fun, const Container& parameters)
+      void display(const Function& fun, const ParameterType& parameters)
       {
 #if VERBOSE > 5
         std::cout << "Point: " << parameters << std::endl;
@@ -89,7 +89,7 @@ namespace Optimization
 #endif
       }
 
-      Container create_new_parameters(const Container& sum, const Container& discarded_point, DataType t)
+      ParameterType create_new_parameters(const ParameterType& sum, const ParameterType& discarded_point, DataType t)
       {
         DataType fac1 = (1 - t) / sum.size();
         DataType fac2 = fac1 - t;
@@ -130,7 +130,7 @@ namespace Optimization
             state.best_parameters = state.current_parameters;
           }
 
-          Container new_parameters = create_new_parameters(polytope_points.rowwise().sum(), polytope_points.col(worst), -1);
+          ParameterType new_parameters = create_new_parameters(polytope_points.rowwise().sum(), polytope_points.col(worst), -1);
           DataType new_value = fun(new_parameters);
 #if VERBOSE > 5
           std::cout << "Trying normal" << std::endl;
@@ -138,7 +138,7 @@ namespace Optimization
 #endif
           if (new_value < state.best_value)
           {
-            Container expansion_parameters = create_new_parameters(polytope_points.rowwise().sum(), polytope_points.col(worst), -2);
+            ParameterType expansion_parameters = create_new_parameters(polytope_points.rowwise().sum(), polytope_points.col(worst), -2);
             DataType expansion_value = fun(expansion_parameters);
 #if VERBOSE > 5
             std::cout << "Trying expansion" << std::endl;
@@ -158,7 +158,7 @@ namespace Optimization
           else if (new_value > polytope_values(0, near_worst))
           {
             // New point is not better than near worst
-            Container contraction_parameters = create_new_parameters(polytope_points.rowwise().sum(), polytope_points.col(worst), -.5);
+            ParameterType contraction_parameters = create_new_parameters(polytope_points.rowwise().sum(), polytope_points.col(worst), -.5);
             DataType contraction_value = fun(contraction_parameters);
 #if VERBOSE > 5
             std::cout << "Trying contraction" << std::endl;
@@ -170,7 +170,7 @@ namespace Optimization
             std::cout << "Contraction around lowest" << std::endl;
             display(fun, contraction_parameters);
 #endif
-              Container best_parameters = polytope_points.col(best);
+              ParameterType best_parameters = polytope_points.col(best);
               std::cout << ((polytope_points.colwise() - best_parameters.array()) / 2) << std::endl;
               polytope_points = ((polytope_points.colwise() - best_parameters.array()) / 2).colwise() + best_parameters.array();
               for(int i = 0; i < polytope_points.cols(); ++i)
@@ -198,7 +198,7 @@ namespace Optimization
       /**
        * Retrieves the best parameters
        */
-      const Container& get_best_parameters() const
+      const ParameterType& get_best_parameters() const
       {
         return state.best_parameters;
       }
@@ -211,7 +211,7 @@ namespace Optimization
         return state.best_value;
       }
 
-      void set_start_point(const Container& point)
+      void set_start_point(const ParameterType& point)
       {
         state.current_parameters = point;
       }
@@ -229,10 +229,10 @@ namespace Optimization
       int get_stop_criterion() const;
     };
 
-    template<class DataType, class Container, class Function, class Criterion>
-    static Simplex<DataType, Container, Function, Criterion> build_simplex(DataType value, const Container& type, const Function& fun, const Criterion& criterion)
+    template<class Function, class Criterion>
+    static Simplex<typename Function::DataType, typename Function::ParameterType, Function, Criterion> build_simplex(const Function& fun, const Criterion& criterion)
     {
-      return Simplex<DataType, Container, Function, Criterion>(criterion);
+      return Simplex<typename Function::DataType, typename Function::ParameterType, Function, Criterion>(criterion);
     }
   }
 }
