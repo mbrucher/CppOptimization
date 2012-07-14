@@ -3,7 +3,7 @@
  */
 
 #include <iostream>
-#include "Eigen/Core"
+#include <Eigen/Core>
 
 #include "simplex.h"
 #include "criteria.h"
