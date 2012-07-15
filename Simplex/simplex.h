@@ -24,6 +24,8 @@ namespace Optimization
     {
       State<DataType, ParameterType> state;
       DataType delta;
+      ParameterType deltas;
+      bool use_deltas;
       Eigen::Array<DataType, Eigen::Dynamic, Eigen::Dynamic> polytope_points;
       Eigen::Array<DataType, Eigen::Dynamic, Eigen::Dynamic> polytope_values;
 
@@ -40,6 +42,22 @@ namespace Optimization
         {
           polytope_points.col(i) = start_point;
           polytope_points(i - 1, i) += delta;
+          polytope_values(0, i) = fun(polytope_points.col(i));
+          display(fun, polytope_points.col(i));
+        }
+      }
+
+      void initialize_polytope(const ParameterType& start_point, ParameterType deltas, const Function& fun)
+      {
+        polytope_points.resize(start_point.size(), start_point.size() + 1);
+        polytope_values.resize(1, start_point.size() + 1);
+        polytope_points.col(0) = start_point;
+        polytope_values(0, 0) = fun(start_point);
+        display(fun, polytope_points.col(0));
+        for (int i = 1; i < start_point.size() + 1; ++i)
+        {
+          polytope_points.col(i) = start_point;
+          polytope_points(i - 1, i) += deltas(i - 1);
           polytope_values(0, i) = fun(polytope_points.col(i));
           display(fun, polytope_points.col(i));
         }
@@ -98,7 +116,7 @@ namespace Optimization
 
     public:
       Simplex(const Criterion& criterion)
-      :criterion(criterion)
+      :delta(0), use_deltas(false), criterion(criterion)
       {
 
       }
@@ -110,7 +128,14 @@ namespace Optimization
         state.former_value = std::numeric_limits<DataType>::max();
         state.best_value = std::numeric_limits<DataType>::max();
 
-        initialize_polytope(state.current_parameters, delta, fun);
+        if(use_deltas)
+        {
+          initialize_polytope(state.current_parameters, deltas, fun);
+        }
+        else
+        {
+          initialize_polytope(state.current_parameters, delta, fun);
+        }
 
         while (criterion(state))
         {
@@ -219,6 +244,13 @@ namespace Optimization
       void set_delta(DataType delta)
       {
         this->delta = delta;
+        use_deltas = false;
+      }
+
+      void set_delta(ParameterType deltas)
+      {
+        this->deltas = deltas;
+        use_deltas = true;
       }
 
       void set_iterations(long iterations)
