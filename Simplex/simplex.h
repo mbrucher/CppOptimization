@@ -18,6 +18,7 @@ namespace Optimization
      * @param DataType is the type of inner values to consider
      * @param ParameterType is the type of ParameterType (Eigen if possible)
      * @param Function is the type of Function to optimize
+     * @param Criterion is the type of the stopping Criterion
      */
     template<class DataType, class ParameterType, class Function, class Criterion>
     class Simplex
